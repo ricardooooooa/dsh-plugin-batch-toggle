@@ -16,19 +16,19 @@
 
 ## 安装
 
-下载预编译的 `dsh-plugin-batch-toggle-0.1.0.tgz`，通过 DSH 的添加插件入口填写安装包绝对路径，或运行：
+在 DSH 的“插件 → 添加插件”中填写以下预编译安装包链接：
 
-```powershell
-dsh plugin --profile desktop add 'C:/Downloads/dsh-plugin-batch-toggle-0.1.0.tgz'
+```text
+https://github.com/ricardooooooa/dsh-plugin-batch-toggle/releases/download/v0.1.0/dsh-plugin-batch-toggle-0.1.0.tgz
 ```
 
-本机没有 `dsh` 命令时，可以用桌面端随附 CLI：
+也可从 [Releases](https://github.com/ricardooooooa/dsh-plugin-batch-toggle/releases/latest) 下载后，在添加插件入口填写安装包绝对路径。若选择命令行安装到桌面 profile，请先完全退出 DSH 桌面端，并使用桌面端随附 CLI，避免全局 CLI 版本或 desktop profile 限制。下面以安装在 C:/dsh 为例，按实际位置调整：
 
 ```powershell
-& 'C:/dsh/resources/runtime/cli/bin/dsh.cmd' plugin --profile desktop add 'C:/Users/admin/Desktop/building/dsh-plugin-batch-toggle/artifacts/dsh-plugin-batch-toggle-0.1.0.tgz'
+& 'C:/dsh/resources/runtime/cli/bin/dsh.cmd' plugin --profile desktop add 'https://github.com/ricardooooooa/dsh-plugin-batch-toggle/releases/download/v0.1.0/dsh-plugin-batch-toggle-0.1.0.tgz'
 ```
 
-在插件管理中启用本插件。若 DSH 提示需要重启，重启后进入插件管理或市场即可看到按钮。安装包自带构建产物，不需要用户安装 TypeScript 或构建工具。npm 发布后才可使用包名安装；当前以本地发行包为准。
+在插件管理中启用本插件。若 DSH 提示需要重启，重启后进入插件管理或市场即可看到按钮。安装包自带构建产物，不需要用户安装 TypeScript 或构建工具。npm 发布后才可使用包名安装；当前请使用上面的 GitHub Release 安装包。
 
 ## 使用
 
@@ -51,6 +51,8 @@ dsh plugin --profile desktop add 'C:/Downloads/dsh-plugin-batch-toggle-0.1.0.tgz
 恢复状态仅保存在当前 profile 目录的 `.dsh-plugin-batch-toggle/`。接口通过 DSH 现有 Owner 认证与同源校验，不额外开放端口。没有遥测、远端上传或模型密钥需求。卸载本插件前建议先完成待恢复操作。
 
 ## 开发
+
+开发者先修改 `config/development.json`，使桌面程序和随附 CLI 路径匹配自己的安装位置；该文件不进入用户安装包。下面的开发命令只在项目隔离目录测试。
 
 ```powershell
 ./tooling/bootstrap.ps1

@@ -94,5 +94,13 @@
       ],
       "external": []
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ricardooooooa/dsh-plugin-batch-toggle.git"
+  },
+  "homepage": "https://github.com/ricardooooooa/dsh-plugin-batch-toggle#readme",
+  "bugs": {
+    "url": "https://github.com/ricardooooooa/dsh-plugin-batch-toggle/issues"
   }
 }

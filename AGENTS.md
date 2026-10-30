@@ -1,6 +1,7 @@
 # Project scope
 
 - 当前阶段：用户已授权实现可安装、可发布的批量开关插件，并在插件管理和插件市场显示按钮。
+- 用户已确认公开创建 GitHub 仓库并发布v0.1.0；仓库为ricardooooooa/dsh-plugin-batch-toggle。npm发布和向其他仓库提交PR不在本次确认范围内。
 - 本机运行基线为 DSH 0.2.1-rc.3；开发SDK保持rc.3，发布兼容范围>=0.2.1-rc.3 <0.2.2-0，rc.5接口源码一致但不可声称完成其运行测试。不要擅自升级桌面端。
 - 用户已选择恢复策略：恢复批量停用前的插件列表，保留原来停用的插件。
 - 测试必须通过 tooling/dev-dsh.mjs 的独立 DSH_HOME、DSH_AGENTS_HOME、工作目录和 documentsDirectory；不读真实凭证，不操作日常 desktop/web profile。

@@ -13,13 +13,13 @@ The interface currently uses Chinese labels: **一键停用** (disable) and **�
 
 ## Install
 
-Use the prebuilt `.tgz` in DSH's add-plugin dialog, or run:
+Paste this prebuilt tarball URL into DSH's Plugins → Add Plugin dialog:
 
-```sh
-dsh plugin --profile desktop add /absolute/path/dsh-plugin-batch-toggle-0.1.0.tgz
+```text
+https://github.com/ricardooooooa/dsh-plugin-batch-toggle/releases/download/v0.1.0/dsh-plugin-batch-toggle-0.1.0.tgz
 ```
 
-Enable the bundle in Plugins and restart if DSH requests it. End users do not need build tools. Registry-name installation is available only after npm publication.
+Enable the bundle in Plugins and restart if DSH requests it. For command-line installation into the desktop profile, fully exit Desktop and use its bundled CLI; a global CLI can have a different version or reject the reserved desktop profile. End users do not need build tools. Registry-name installation is available only after npm publication.
 
 Disable, wait for completion, update packages with the marketplace's existing workflow, then restore. Failed recovery entries remain available for retry. Removed packages are skipped, never reinstalled automatically.
 
@@ -31,6 +31,6 @@ State stays in `.dsh-plugin-batch-toggle/` inside the active profile. Endpoints 
 
 ## Development
 
-Run `tooling/bootstrap.ps1`, then `tooling/pnpm.ps1 run check`, `release:pack`, and `test:integration`. Integration tests use an isolated profile and local fixture bundles.
+Set the paths in `config/development.json` to your Desktop installation. Run `tooling/bootstrap.ps1`, then `tooling/pnpm.ps1 run check`, `release:pack`, and `test:integration`. Integration tests use an isolated profile and local fixture bundles.
 
 See [release and community listing guidance](docs/RELEASE.md). MIT License.
