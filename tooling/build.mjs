@@ -17,7 +17,7 @@ for (const entry of entries) {
 await mkdir(outdir, { recursive: true })
 await build({ entryPoints: [path.join(root, entries[0])], outfile: path.join(outdir, 'index.js'), bundle: true, platform: 'node', format: 'esm', packages: 'external', target: 'node24', sourcemap: true })
 
-// rc.3 shared browser module table; do not replace this with external: ['*'].
+// DSH shared browser module table; do not replace this with external: ['*'].
 const platformModules = ['react', 'react/jsx-runtime', 'react-dom', 'react-dom/client', '@deepseek-ai/cordis', 'zod', '@tanstack/react-virtual', '@deepseek-ai/dsh-client-store', '@deepseek-ai/dsh-client-ui-slots', '@deepseek-ai/dsh-client-ui-primitives', '@deepseek-ai/dsh-client-ui-dockkit']
 const result = await build({ entryPoints: [path.join(root, entries[1])], bundle: true, write: false, platform: 'browser', format: 'cjs', target: 'es2022', jsx: 'automatic', external: platformModules, define: { 'process.env.NODE_ENV': '"production"' } })
 const code = `window.__ModuleLoader__.load({ id: ${JSON.stringify(pkg.name)}, factory: (require) => { var module = { exports: {} }; var exports = module.exports;\n${result.outputFiles[0].text}\nreturn module.exports; } });\n`
@@ -28,4 +28,4 @@ if (probe) {
   if (!registered) throw new Error('Client module not registered')
 }
 await writeFile(path.join(outdir, 'client.js'), code)
-console.log(`${probe ? 'Toolchain probe' : 'Plugin build'}: host ESM and rc.3 client ModuleLoader bundle verified.`)
+console.log(`${probe ? 'Toolchain probe' : 'Plugin build'}: host ESM and DSH client ModuleLoader bundle verified.`)

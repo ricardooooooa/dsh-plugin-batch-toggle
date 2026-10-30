@@ -1,68 +1,66 @@
-# DSH Plugin Batch Toggle · 插件一键停用与恢复
+# DSH Plugin Batch Toggle · 插件一键更新
 
-更新插件前，一键暂停当前开启的第三方插件；更新后，一键恢复原来的启用列表。原先关闭的插件继续保持关闭。
+在 DeepSeek Harness 的插件管理和插件市场中，用一颗 **一键更新** 按钮完成检查、取消使用、逐项更新和恢复原启用状态。无需先手工批量关闭插件。
 
 [English](./README.en.md)
 
-![插件市场中的批量按钮](./docs/screenshots/plugin-market.png)
-
-## 使用效果
-
-- 插件管理、官方 Discover 标签和 dshmarket 标签的页头显示 **一键停用 / 一键启用**。
-- dshmarket 独立设置或侧栏面板顶部也显示相同按钮。
-- 原生 **批量开关** 标签页提供进度、逐项结果、待恢复插件及重启提示；“添加插件”菜单也提供入口。
-- 停用前保存当前 profile 的恢复记录。重启 DSH 后仍可继续恢复。
-- 跳过核心/只读组件、市场载体及本插件，保留恢复入口。每轮恢复完成后才允许开始下一轮停用。
-
-## 安装
-
-在 DSH 的“插件 → 添加插件”中填写以下预编译安装包链接：
-
-```text
-https://github.com/ricardooooooa/dsh-plugin-batch-toggle/releases/download/v0.1.0/dsh-plugin-batch-toggle-0.1.0.tgz
-```
-
-也可从 [Releases](https://github.com/ricardooooooa/dsh-plugin-batch-toggle/releases/latest) 下载后，在添加插件入口填写安装包绝对路径。若选择命令行安装到桌面 profile，请先完全退出 DSH 桌面端，并使用桌面端随附 CLI，避免全局 CLI 版本或 desktop profile 限制。下面以安装在 C:/dsh 为例，按实际位置调整：
-
-```powershell
-& 'C:/dsh/resources/runtime/cli/bin/dsh.cmd' plugin --profile desktop add 'https://github.com/ricardooooooa/dsh-plugin-batch-toggle/releases/download/v0.1.0/dsh-plugin-batch-toggle-0.1.0.tgz'
-```
-
-在插件管理中启用本插件。若 DSH 提示需要重启，重启后进入插件管理或市场即可看到按钮。安装包自带构建产物，不需要用户安装 TypeScript 或构建工具。npm 发布后才可使用包名安装；当前请使用上面的 GitHub Release 安装包。
-
 ## 使用
 
-1. 点击 **一键停用**。等待本轮完成，查看失败项或重启提示。
-2. 按市场原有流程更新需要更新的插件。
-3. 点击 **一键启用**，恢复本轮停用前开启的插件。
+1. 打开“插件”页或 dshmarket，点击 **一键更新**。
+2. 插件按顺序处理。界面显示当前项、所处阶段、进度、失败数量和逐项结果；单项明确失败并完成收尾后，继续后面的项目。
+3. 如需结束本轮，点击同一位置的 **停止更新**。停止请求会等待当前项安全收尾或回滚，不会立即杀死安装进程。
 
-恢复失败的项目保留在待恢复列表，可再次点击启用；已卸载的包不会被重新安装。批停不主动切换模型账号、不调用模型，也不自动安装、更新或重启 DSH。
+原先关闭的插件更新后保持关闭。若存在 v0.1 留下的恢复记录，一键更新会先接续处理，按当时记录的启用意图恢复，无需寻找旧版的停用或启用按钮。
 
-## 兼容范围与限制
+原生 **批量更新** 标签页提供详细结果，“添加插件”菜单也有一键更新入口。官方 Installed、Discover 和 dshmarket 标签共用页头按钮；dshmarket 独立设置或侧栏面板顶部也有入口。
 
-- 声明范围：DSH `>=0.2.1-rc.3 <0.2.2-0`，Node24+。运行验收基线为 rc.3；rc.5 相关接口源码比对一致，未单独完成其运行验收。
-- 官方管理页使用原生插槽作为稳定入口。页头按钮采用 DOM 兼容层；DSH 或 dshmarket 改变结构时，原生“批量开关”标签和菜单仍可使用。
-- 官方启用 API 会把恢复的包追加到启用列表末尾。本插件按记录中的目标顺序恢复，不能保证与保留包交错的完整配置层顺序原样复原。
-- 管理当前 profile 的 bundle 开关，不强开包内原先关闭的 Cordis 插件项。
-- 第三方清理若卡住，官方 API 没有安全取消参数。界面保持进行中，不并发叠加操作；重启后根据持久记录恢复。
+## 自动更新范围
 
-## 数据与权限
+- 支持可管理的、以自身包名从 npm 注册表安装的第三方 bundle。
+- 跳过本插件、市场载体、官方/核心组件、只读或不可管理项。
+- Git、本地 file/link、tarball/URL 和 npm 别名来源会跳过，不会换成同名 npm 包。排除项及原因可在详情中查看。
 
-恢复状态仅保存在当前 profile 目录的 `.dsh-plugin-batch-toggle/`。接口通过 DSH 现有 Owner 认证与同源校验，不额外开放端口。没有遥测、远端上传或模型密钥需求。卸载本插件前建议先完成待恢复操作。
+每次只处理一个插件：查询版本，必要时取消使用，移除旧包，安装更新，再恢复该项的启用意图并核对结果。
 
-## 开发
+更新通过 DSH 官方插件管理 SDK 执行，不依赖 dshmarket 自动启用插件。查询的 `latest` 仅作版本参考；实际安装遵守官方注册表配置、兼容性、脚本审批和 `minimumReleaseAge` 发布等待策略，因此可能尚未安装刚发布的最新版本。结果分别显示更新前版本、查询最新版本、实际安装版本和当前启用状态。
 
-开发者先修改 `config/development.json`，使桌面程序和随附 CLI 路径匹配自己的安装位置；该文件不进入用户安装包。下面的开发命令只在项目隔离目录测试。
+## 失败与恢复
+
+安装或校验失败时，会尽力安装原版本并恢复原启用意图。失败、回滚结果和未完成责任会持久保存；再次一键更新会优先接续上次未完成项。
+
+回滚失败不代表已恢复成功。详情会明确标出仍需恢复的项目；第三方安装脚本、数据和运行状态不保证能够完全撤销。若官方接口要求重启，界面会提示，本插件不会自动重启 DSH。
+
+## 安装与升级
+
+运行基线为 **DSH 0.2.1-rc.5**，兼容声明为 `>=0.2.1-rc.5 <0.2.2-0`，需要 Node.js 24 或更新版本。
+
+从 [GitHub Releases](https://github.com/ricardooooooa/dsh-plugin-batch-toggle/releases) 获取已发布的 v0.2.0 预编译 `.tgz`，在 DSH“插件 → 添加插件”中填写安装包的绝对路径或已发布附件链接。最终可下载版本以 Release 页面为准。预编译包不要求用户安装 TypeScript 或构建工具。
+
+升级本插件应使用 DSH 自己的插件安装/更新入口；它会跳过自身，不在一键更新中更新自己。如果使用命令行安装桌面 profile，先完全退出桌面端，并使用当前 rc.5 安装附带的 CLI；不要使用旧安装目录中的 CLI。npm 包名安装以实际 npm 发布状态为准。
+
+## 兼容性与数据
+
+- 页头入口使用 DOM 标记兼容层。页面结构改变时，原生“批量更新”标签与菜单仍是稳定入口。
+- 管理 bundle 的使用选择，不强制开启包内原先关闭的 Cordis 插件项。
+- 官方启用接口会把重新启用的包追加到列表末尾；不能保证与保留包交错的完整配置优先顺序原样复原。
+- 更新记录和旧版恢复记录分离，保存在当前 profile 的 `.dsh-plugin-batch-toggle/`。卸载前应先处理未完成项。
+- 接口使用 DSH 现有 Owner 认证与同源校验，不额外监听端口，不需要模型密钥。本插件不上传会话；查询和安装会访问配置的 npm 注册表。
+
+## 开发与验证
+
+开发工具自动发现与基线一致的 rc.5 安装，也可在 `config/development.json` 中指定路径。以下命令使用项目隔离环境：
 
 ```powershell
 ./tooling/bootstrap.ps1
 ./tooling/pnpm.ps1 run check
 ./tooling/pnpm.ps1 run release:pack
-./tooling/pnpm.ps1 run test:integration
+./tooling/pnpm.ps1 run test:integration:updates
 ```
 
-集成测试仅操作项目 `.dev/integration` 内的独立 profile，验证鉴权、真实 HMR 停用及进程重启后的恢复。测试不连接日常 desktop profile 或真实模型账户。
+rc.5 控制注册表集成场景已验证：A/C/D 更新成功，B 更新失败后回滚，后续项目继续；原先关闭的 D 保持关闭且未执行。详情和验证边界见 [验收记录](./docs/VALIDATION.md)。测试使用独立 profile，不替用户执行日常插件的一键更新。
 
-[发布与社区收录指南](./docs/RELEASE.md) · [设计依据](./docs/superpowers/specs/2026-10-30-batch-plugin-design.md)
+![插件市场中的一键更新入口](./docs/screenshots/plugin-market.png)
+
+[发布与社区收录指南](./docs/RELEASE.md) · [当前设计](./docs/superpowers/specs/2026-10-30-rc5-one-click-update.md)
 
 MIT License.

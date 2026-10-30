@@ -15,7 +15,7 @@ export function apply(ctx: Context): void {
   ctx.effect(() => () => { store.dispose() }, 'batch-toggle: shared state')
   ctx.effect(() => installStyles(document), 'batch-toggle: styles')
   ctx.slots.inject('plugins.tab', () => ctx.slots.register({
-    name: 'plugins.tab', id: 'batch-toggle', order: 90, label: () => '批量开关',
+    name: 'plugins.tab', id: 'batch-toggle', order: 90, label: () => '批量更新',
   }, () => <BatchPanel store={store} />))
   ctx.slots.inject('plugins.add.actions', () => ctx.slots.register({
     name: 'plugins.add.actions', id: 'batch-toggle.actions', order: 90,

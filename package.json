@@ -1,13 +1,13 @@
 {
   "name": "dsh-plugin-batch-toggle",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
-  "description": "One-click disable and restore for DeepSeek Harness plugins. DSH 插件一键停用与恢复。",
+  "description": "One-click sequential plugin updates for DeepSeek Harness, with automatic pause, recovery and failure continuation. DSH 插件一键更新。",
   "type": "module",
   "packageManager": "pnpm@11.28.5",
   "engines": {
     "node": ">=24.0.0",
-    "dsh": ">=0.2.1-rc.3 <0.2.2-0"
+    "dsh": ">=0.2.1-rc.5 <0.2.2-0"
   },
   "scripts": {
     "doctor": "node tooling/doctor.mjs",
@@ -20,23 +20,25 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "prepack": "npm run build",
     "release:pack": "node tooling/pack.mjs",
-    "test:integration": "node tooling/integration.mjs"
+    "test:integration": "node tooling/integration.mjs",
+    "test:integration:updates": "node tooling/integration.mjs --market --updates"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "4.0.5",
-    "@deepseek-ai/dsh-api-remotes": "0.2.1-rc.3",
-    "@deepseek-ai/dsh-app-boot": "0.2.1-rc.3",
-    "@deepseek-ai/dsh-client-connection": "0.2.1-rc.3",
-    "@deepseek-ai/dsh-client-ui-layout": "0.2.1-rc.3",
-    "@deepseek-ai/dsh-client-ui-plugin-manager": "0.2.1-rc.3",
-    "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-rc.3",
-    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.3",
-    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.3",
-    "@deepseek-ai/dsh-plugin-manager": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-api-remotes": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-app-boot": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-connection": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-layout": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-plugin-manager": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-plugin-manager": "0.2.1-rc.5",
     "@types/jsdom": "28.0.3",
     "@types/node": "24.0.0",
     "@types/react": "18.3.1",
     "@types/react-dom": "18.3.1",
+    "@types/semver": "7.8.0",
     "esbuild": "0.28.2",
     "jsdom": "29.1.1",
     "react": "18.3.1",
@@ -72,8 +74,8 @@
   ],
   "peerDependencies": {
     "@deepseek-ai/cordis": "~4.0.5",
-    "@deepseek-ai/dsh-client-connection": ">=0.2.1-rc.3 <0.2.2-0",
-    "@deepseek-ai/dsh-plugin-manager": ">=0.2.1-rc.3 <0.2.2-0"
+    "@deepseek-ai/dsh-client-connection": ">=0.2.1-rc.5 <0.2.2-0",
+    "@deepseek-ai/dsh-plugin-manager": ">=0.2.1-rc.5 <0.2.2-0"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/dsh-plugin-manager": {
@@ -102,5 +104,8 @@
   "homepage": "https://github.com/ricardooooooa/dsh-plugin-batch-toggle#readme",
   "bugs": {
     "url": "https://github.com/ricardooooooa/dsh-plugin-batch-toggle/issues"
+  },
+  "dependencies": {
+    "semver": "7.8.5"
   }
 }

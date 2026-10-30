@@ -7,6 +7,8 @@ export function observePlacements(document: Document, changed: (targets: HTMLEle
     if (disposed) return
     const desired = new Map<Element, { before: Element | null; surface: string }>()
     for (const panel of document.querySelectorAll('section[data-plugin-panel]')) {
+      // The native tab already owns its primary action and status display.
+      if (panel.querySelector('[data-batch-toggle-panel]') !== null) continue
       const header = panel.querySelector(':scope > header[data-window-drag]')
       if (header !== null) desired.set(header, { before: null, surface: 'plugins' })
     }
@@ -50,7 +52,7 @@ export function observePlacements(document: Document, changed: (targets: HTMLEle
   const observer = new Observer(reconcile)
   observer.observe(document.documentElement, {
     childList: true, subtree: true, attributes: true,
-    attributeFilter: ['data-plugin-panel', 'data-window-drag', 'data-dsh-market-root', 'data-dsh-market-crashed'],
+    attributeFilter: ['data-plugin-panel', 'data-window-drag', 'data-dsh-market-root', 'data-dsh-market-crashed', 'data-batch-toggle-panel'],
   })
   reconcile()
   return () => {

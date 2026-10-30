@@ -72,6 +72,31 @@ test('navigation, repeated observation and own mutations never duplicate toolbar
   dom.window.close()
 })
 
+test('opening the native update tab hides the duplicate header action and leaving restores it without changing standalone markets', async () => {
+  const dom = new JSDOM('<section data-plugin-panel><header data-window-drag><button>Install</button></header><div id="tab"></div></section><div data-dsh-market-root id="standalone"><p>Market content</p></div>')
+  const document = dom.window.document
+  const stop = observePlacements(document, () => {})
+  const header = document.querySelector('header')!
+  const tab = document.querySelector('#tab')!
+  assert.equal(header.querySelectorAll('[data-batch-toggle-toolbar]').length, 1)
+  assert.equal(document.querySelector('#standalone')?.querySelectorAll('[data-batch-toggle-toolbar]').length, 1)
+  tab.innerHTML = '<section data-batch-toggle-panel><button data-detail-action>一键更新</button></section>'
+  await tick()
+  assert.equal(header.querySelectorAll('[data-batch-toggle-toolbar]').length, 0)
+  assert.equal(document.querySelector('[data-detail-action]')?.textContent, '一键更新')
+  assert.equal(document.querySelector('#standalone')?.querySelectorAll('[data-batch-toggle-toolbar]').length, 1)
+  tab.innerHTML = '<div data-dsh-market-root>Embedded market</div>'
+  await tick()
+  assert.equal(header.querySelectorAll('[data-batch-toggle-toolbar]').length, 1)
+  assert.equal(tab.querySelectorAll('[data-batch-toggle-toolbar]').length, 0)
+  assert.equal(document.querySelectorAll('[data-batch-toggle-toolbar]').length, 2)
+  stop()
+  assert.equal(document.querySelectorAll('[data-batch-toggle-toolbar]').length, 0)
+  assert.equal(header.querySelector('button')?.textContent, 'Install')
+  assert.equal(document.querySelector('#standalone p')?.textContent, 'Market content')
+  dom.window.close()
+})
+
 test('pending snapshot prevents another disable while keeping restore available', () => {
   const view = actionView({ status: idle({ pendingRestore: ['plugin-a'], snapshotCreatedAt: '2026-10-30T00:00:00Z' }), loading: false, submitting: null, error: null })
   assert.equal(view.disableDisabled, true)

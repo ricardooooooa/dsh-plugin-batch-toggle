@@ -1,9 +1,9 @@
-# Prepared for the public v0.1.0 release; submit after the repository meets the age requirement.
+# Prepared for v0.2.0; verify the release asset before submitting this entry.
 # Destination: data/plugins/ricardooooooa__dsh-plugin-batch-toggle.yml in awesome-dsh-plugin.
 url: https://github.com/ricardooooooa/dsh-plugin-batch-toggle
 name: ricardooooooa/dsh-plugin-batch-toggle
 category: market
 description:
-  en: One-click pause and restore for enabled DSH plugins, with persistent recovery and protected core and marketplace controls.
-  zh: 在插件管理和市场显示一键停用、一键启用按钮，更新前暂停第三方插件，更新后恢复原先的启用列表。
-tarball: https://github.com/ricardooooooa/dsh-plugin-batch-toggle/releases/download/v0.1.0/dsh-plugin-batch-toggle-0.1.0.tgz
+  en: One-click sequential updates for npm-installed DSH plugins, with enabled-state preservation, rollback and persistent recovery.
+  zh: 在插件管理和市场提供一键更新，顺序更新 npm 来源插件，保留启用状态，失败后尽力回滚并接续后续项目。
+tarball: https://github.com/ricardooooooa/dsh-plugin-batch-toggle/releases/download/v0.2.0/dsh-plugin-batch-toggle-0.2.0.tgz

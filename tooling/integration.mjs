@@ -4,16 +4,18 @@ import { mkdir, readFile, writeFile, access } from 'node:fs/promises'
 import { once } from 'node:events'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { loadDevelopmentConfig } from './development.mjs'
+import { createFixtureRegistry } from './fixture-registry.mjs'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
-const config = JSON.parse(await readFile(path.join(root, 'config/development.json'), 'utf8'))
+const config = await loadDevelopmentConfig(root)
 const pkg = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'))
 const home = path.join(root, '.dev/integration/home')
 const agents = path.join(root, '.dev/integration/agents')
 const cwd = path.join(root, '.dev/integration/workspace')
 const profile = path.join(home, 'profiles/batch-integration')
 const manifestPath = path.join(profile, 'package.json')
-const cli = path.join(path.dirname(config.desktopExecutable), 'resources/app.asar/dsh/node_modules/@deepseek-ai/dsh-desktop-host/lib/cli.js')
+const cli = config.desktopCliEntry
 const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/(API[_-]?KEY|TOKEN|SECRET|CREDENTIAL|PASSWORD)/i.test(key) && !/^(DSH_|DEEPSEEK_|ANTHROPIC_|OPENAI_|GEMINI_|GOOGLE_|AZURE_|AWS_|NODE_OPTIONS|ELECTRON_RUN_AS_NODE)/i.test(key)))
 Object.assign(env, { ELECTRON_RUN_AS_NODE: '1', DSH_HOME: home, DSH_AGENTS_HOME: agents, DSH_TELEMETRY_DISABLED: '1' })
 for (const dir of [home, agents, cwd]) await mkdir(dir, { recursive: true })
@@ -35,20 +37,27 @@ const bundle = async (suffix) => {
   const directory = path.join(root, '.dev/integration/fixtures', name)
   await mkdir(directory, { recursive: true })
   await writeFile(path.join(directory, 'package.json'), JSON.stringify({ name, version: '1.0.0', type: 'module', main: 'index.js', dsh: { bundle: { patch: './cordis.patch.yml' } } }, null, 2))
-  await writeFile(path.join(directory, 'index.js'), `export const name = ${JSON.stringify(name)}; export function apply(ctx) { ctx.on('dispose', () => {}); }\n`)
+  await writeFile(path.join(directory, 'index.js'), `export const name = ${JSON.stringify(name)}; export function apply(ctx) { ctx.effect(() => () => {}); }\n`)
   await writeFile(path.join(directory, 'cordis.patch.yml'), `- insert:\n    - id: ${name}\n      name: ${name}\n`)
   return { name, directory }
 }
 const tgz = path.join(root, 'artifacts', `${pkg.name}-${pkg.version}.tgz`)
 await access(tgz)
 await run(['--profile', 'batch-integration', '--from-default-profile', 'web', '--dump-default-config'])
+await writeFile(path.join(profile, '.npmrc'), 'registry=https://registry.npmjs.org/\nfetch-retries=0\nfetch-timeout=15000\n')
 const alpha = await bundle('alpha')
 const dormant = await bundle('dormant')
 await run(['plugin', '--profile', 'batch-integration', 'add', '--ignore-scripts', tgz, `file:${alpha.directory}`, `file:${dormant.directory}`])
 if (process.argv.includes('--market')) await run(['plugin', '--profile', 'batch-integration', 'add', '--ignore-scripts', 'dshmarket@1.73.1'])
+const registry = process.argv.includes('--updates') ? await createFixtureRegistry() : null
+if (registry) {
+  await writeFile(path.join(profile, '.npmrc'), `registry=${registry.origin}/\nfetch-retries=0\nfetch-timeout=10000\n`)
+  await run(['plugin', '--profile', 'batch-integration', 'add', '--ignore-scripts', ...registry.names.map(name => `${name}@1.0.0`)])
+}
 const initial = JSON.parse(await readFile(manifestPath, 'utf8'))
 initial.dsh.profile.bundles = ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', pkg.name, alpha.name]
 if (process.argv.includes('--market')) initial.dsh.profile.bundles.push('dshmarket')
+if (registry) initial.dsh.profile.bundles.push(...registry.names.slice(0, 3))
 await writeFile(manifestPath, JSON.stringify(initial, null, 2) + '\n')
 const patch = path.join(root, '.dev/integration/isolation.patch.yml')
 await writeFile(patch, `- id: workspace-controller\n  config:\n    documentsDirectory: ${JSON.stringify(path.join(root, '.dev/integration/documents').replaceAll('\\', '/'))}\n`)
@@ -86,8 +95,8 @@ const stop = async () => {
   await Promise.race([closed, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('DSH cleanup timed out')), 8000) })])
   clearTimeout(timer)
 }
-const settled = async runtime => {
-  const deadline = Date.now() + 30000
+const settled = async (runtime, timeoutMs = 30000) => {
+  const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
     const response = await runtime.request('status')
     assert.equal(response.status, 200)
@@ -112,19 +121,19 @@ try {
     assert.equal((await runtime.request('disable', { method: 'POST', headers: { Origin: 'https://evil.invalid', 'Sec-Fetch-Site': 'cross-site' } })).status, 403)
     record('owner authentication and cross-origin mutation rejection')
     let state = await settled(runtime)
-    assert.deepEqual(state.candidates, [alpha.name])
+    assert.deepEqual(state.candidates, [alpha.name, ...(registry ? registry.names.slice(0,3) : [])])
     assert.ok(!state.candidates.includes(pkg.name)); assert.ok(!state.candidates.includes(dormant.name))
     record('core/self and previously disabled bundle protection')
     assert.equal((await runtime.request('disable', { method: 'POST' })).status, 202)
     state = await settled(runtime)
-    assert.deepEqual(state.pendingRestore, [alpha.name])
+    assert.deepEqual(state.pendingRestore, [alpha.name, ...(registry ? registry.names.slice(0,3) : [])])
     assert.ok(!(await selected()).includes(alpha.name))
     assert.ok((await selected()).includes(pkg.name))
     record('real manager/HMR batch disable keeps recovery plugin alive')
     await stop()
     runtime = await launch()
     state = await settled(runtime)
-    assert.deepEqual(state.pendingRestore, [alpha.name])
+    assert.deepEqual(state.pendingRestore, [alpha.name, ...(registry ? registry.names.slice(0,3) : [])])
     record('persistent recovery survives DSH process restart')
     assert.equal((await runtime.request('restore', { method: 'POST' })).status, 202)
     state = await settled(runtime)
@@ -133,6 +142,27 @@ try {
     assert.ok(!(await selected()).includes(dormant.name))
     assert.ok(state.results.every(item => ['applied', 'restart-required', 'skipped'].includes(item.outcome)))
     record('real restore re-enables the prior list and leaves dormant plugin off')
+    if (registry) {
+      assert.ok([401,403].includes((await fetch(`${runtime.origin}/api/dsh-plugin-batch-toggle/update`,{method:'POST'})).status))
+      assert.equal((await runtime.request('update', { method: 'POST' })).status, 202)
+      state = await settled(runtime, 180000)
+      const result = name => state.update.results.find(item => item.name === name)
+      for (const name of [registry.names[0], registry.names[2], registry.names[3]]) {
+        assert.equal(result(name)?.outcome, 'updated', JSON.stringify(result(name)))
+        assert.equal(result(name)?.installedVersion, '1.1.0')
+      }
+      assert.equal(result(registry.names[1])?.outcome, 'failed', JSON.stringify(result(registry.names[1])))
+      assert.equal(result(registry.names[1])?.rollback, 'succeeded')
+      assert.equal(result(registry.names[1])?.installedVersion, '1.0.0')
+      assert.ok(!(await selected()).includes(registry.names[3]))
+      const events = (await readFile(path.join(home,'fixture-events.jsonl'),'utf8')).trim().split('\n').map(line=>JSON.parse(line))
+      assert.ok(!events.some(event=>event.name===registry.names[3]),'previously disabled package must never execute during update')
+      assert.ok(state.update.results.findIndex(item=>item.name===registry.names[1]) < state.update.results.findIndex(item=>item.name===registry.names[2]))
+      record('one-click real npm update: A succeeds, B rolls back, C continues, D stays inactive')
+      await stop(); runtime=await launch(); state=await settled(runtime)
+      assert.equal(state.update.results.find(item=>item.name===registry.names[1])?.rollback,'succeeded')
+      record('update report survives actual rc.5 process restart')
+    }
     await writeFile(path.join(root, '.dev/integration-report.json'), JSON.stringify({ checkedAt: new Date().toISOString(), runtimeVersion: config.baseline, release: path.basename(tgz), checks, result: 'passed', realUserProfileChanged: false }, null, 2) + '\n')
   }
-} finally { await stop() }
+} finally { await stop(); if (registry) await registry.close() }

@@ -1,5 +1,6 @@
 # 开发准备阶段的依据与边界（历史记录）
 
+> 历史记录：当前 v0.2.0 已改为 rc.5 的单一“一键更新”流程，现状参见 [README](../README.md) 和 [验证记录](VALIDATION.md)。
 日期：2026-10-30。此文保留第一阶段的调查记录；插件已继续实现，当前设计和交付以 README 与 docs/superpowers/specs/2026-10-30-batch-plugin-design.md 为准。
 
 ## 已确认的需求

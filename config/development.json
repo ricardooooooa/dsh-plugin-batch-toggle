@@ -1,7 +1,7 @@
 {
-  "baseline": "0.2.1-rc.3",
-  "desktopExecutable": "C:/dsh/DeepSeek Harness.exe",
-  "desktopCli": "C:/dsh/resources/runtime/cli/bin/dsh.cmd",
+  "baseline": "0.2.1-rc.5",
+  "desktopExecutable": "auto",
+  "desktopCli": "auto",
   "profile": "plugin-lab",
   "host": "127.0.0.1",
   "port": 0,

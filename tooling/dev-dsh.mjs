@@ -1,10 +1,11 @@
 import { spawn, spawnSync } from 'node:child_process'
-import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { access, mkdir, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { loadDevelopmentConfig } from './development.mjs'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
-const config = JSON.parse(await readFile(path.join(root, 'config/development.json'), 'utf8'))
+const config = await loadDevelopmentConfig(root)
 const smoke = process.argv.includes('--smoke')
 const dev = path.join(root, '.dev')
 const home = path.join(dev, 'dsh-home')
@@ -25,7 +26,7 @@ const env = Object.fromEntries(Object.entries(process.env).filter(([key]) =>
   !/^(DSH_|DEEPSEEK_|ANTHROPIC_|OPENAI_|GEMINI_|GOOGLE_|AZURE_|AWS_)/i.test(key) &&
   !/^(NODE_OPTIONS|ELECTRON_RUN_AS_NODE)$/i.test(key)))
 Object.assign(env, { DSH_HOME: home, DSH_AGENTS_HOME: agentsHome, ELECTRON_RUN_AS_NODE: '1' })
-const cli = path.join(path.dirname(config.desktopExecutable), 'resources/app.asar/dsh/node_modules/@deepseek-ai/dsh-desktop-host/lib/cli.js')
+const cli = config.desktopCliEntry
 const args = ['--expose-internals', cli, '--profile', config.profile]
 try { await access(path.join(home, 'profiles', config.profile, 'package.json')) } catch {
   args.push('--from-default-profile', 'web')
