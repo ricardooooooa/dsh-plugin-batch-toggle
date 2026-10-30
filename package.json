@@ -1,0 +1,98 @@
+{
+  "name": "dsh-plugin-batch-toggle",
+  "version": "0.1.0",
+  "private": false,
+  "description": "One-click disable and restore for DeepSeek Harness plugins. DSH 插件一键停用与恢复。",
+  "type": "module",
+  "packageManager": "pnpm@11.28.5",
+  "engines": {
+    "node": ">=24.0.0",
+    "dsh": ">=0.2.1-rc.3 <0.2.2-0"
+  },
+  "scripts": {
+    "doctor": "node tooling/doctor.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "check:build": "node tooling/build.mjs --probe",
+    "check": "pnpm run typecheck && pnpm test && pnpm run build",
+    "build": "node tooling/build.mjs",
+    "dev:dsh": "node tooling/dev-dsh.mjs",
+    "dev:smoke": "node tooling/dev-dsh.mjs --smoke",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "prepack": "npm run build",
+    "release:pack": "node tooling/pack.mjs",
+    "test:integration": "node tooling/integration.mjs"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/dsh-api-remotes": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-app-boot": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-connection": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-layout": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-plugin-manager": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-plugin-manager": "0.2.1-rc.3",
+    "@types/jsdom": "28.0.3",
+    "@types/node": "24.0.0",
+    "@types/react": "18.3.1",
+    "@types/react-dom": "18.3.1",
+    "esbuild": "0.28.2",
+    "jsdom": "29.1.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "tsx": "4.23.13",
+    "typescript": "6.0.3"
+  },
+  "license": "MIT",
+  "keywords": [
+    "dsh-plugin",
+    "deepseek",
+    "harness",
+    "plugin-manager",
+    "market",
+    "batch-toggle"
+  ],
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "README.en.md",
+    "LICENSE",
+    "docs/RELEASE.md",
+    "screenshots.json",
+    "docs/screenshots"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5",
+    "@deepseek-ai/dsh-client-connection": ">=0.2.1-rc.3 <0.2.2-0",
+    "@deepseek-ai/dsh-plugin-manager": ">=0.2.1-rc.3 <0.2.2-0"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-plugin-manager": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-client-connection": {
+      "optional": true
+    }
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-plugin-manager"
+      ],
+      "external": []
+    }
+  }
+}

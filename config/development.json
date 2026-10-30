@@ -1,0 +1,18 @@
+{
+  "baseline": "0.2.1-rc.3",
+  "desktopExecutable": "C:/dsh/DeepSeek Harness.exe",
+  "desktopCli": "C:/dsh/resources/runtime/cli/bin/dsh.cmd",
+  "profile": "plugin-lab",
+  "host": "127.0.0.1",
+  "port": 0,
+  "futurePluginPackage": "dsh-plugin-batch-toggle",
+  "preparationOnly": false,
+  "restoreMode": "previously-enabled-snapshot",
+  "batchPolicy": {
+    "respectReadOnlyReason": true,
+    "excludeOwnBundle": true,
+    "excludeOwnEntries": true,
+    "preservePreviouslyDisabled": true,
+    "inspectApplicationResult": true
+  }
+}

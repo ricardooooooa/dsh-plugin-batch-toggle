@@ -1,0 +1,3 @@
+- insert:
+    - id: dsh-plugin-batch-toggle-host
+      name: dsh-plugin-batch-toggle

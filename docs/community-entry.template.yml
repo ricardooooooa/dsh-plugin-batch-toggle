@@ -1,0 +1,9 @@
+# Replace OWNER and REPOSITORY with the real public GitHub repository.
+# Destination: data/plugins/OWNER__REPOSITORY.yml in awesome-dsh-plugin.
+url: https://github.com/OWNER/REPOSITORY
+name: OWNER/REPOSITORY
+category: market
+description:
+  en: One-click pause and restore for enabled DSH plugins, with persistent recovery and protected core and marketplace controls.
+  zh: 在插件管理和市场显示一键停用、一键启用按钮，更新前暂停第三方插件，更新后恢复原先的启用列表。
+tarball: https://github.com/OWNER/REPOSITORY/releases/download/v0.1.0/dsh-plugin-batch-toggle-0.1.0.tgz
