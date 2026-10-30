@@ -1,0 +1,37 @@
+name: 更新或恢复问题 / Update or recovery problem
+description: 报告一键更新、启用状态或界面的问题。
+title: "[Bug] "
+body:
+  - type: input
+    id: dsh-version
+    attributes:
+      label: DSH 版本 / DSH version
+      placeholder: 0.2.1-rc.5
+    validations:
+      required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: 本插件版本 / This plugin version
+      placeholder: 0.2.0
+    validations:
+      required: true
+  - type: textarea
+    id: affected-plugin
+    attributes:
+      label: 涉及的插件 / Affected plugins
+      description: 填写包名、更新前后版本，以及它原先是启用还是停用。
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 操作与结果 / Steps and result
+      description: 说明操作步骤、预期结果和实际发生的情况。界面问题可附截图。
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: 错误提示 / Error message
+      description: 可选：粘贴相关提示或回滚结果，提交前隐去密钥、Cookie 和其他私密信息。

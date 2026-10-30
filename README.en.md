@@ -1,48 +1,76 @@
 # DSH Plugin Batch Toggle · One-click plugin updates
 
-One **Update all** action checks DeepSeek Harness plugins, temporarily disables each eligible package when needed, updates it, and restores its enabled intent. There is no separate disable-everything step.
+[![CI](https://github.com/ricardooooooa/dsh-plugin-batch-toggle/actions/workflows/ci.yml/badge.svg)](https://github.com/ricardooooooa/dsh-plugin-batch-toggle/actions/workflows/ci.yml)
 
-The current interface uses Chinese labels: **一键更新** means Update all, **停止更新** means Stop updates, and **批量更新** is the detailed update tab.
+One **Update all** action in DeepSeek Harness plugin management and dshmarket updates npm-installed plugins serially, temporarily disabling them when needed and restoring their enabled intent. Previously disabled packages stay disabled.
+
+[简体中文](./README.md) · [Changelog](./CHANGELOG.md) · [Report an issue](https://github.com/ricardooooooa/dsh-plugin-batch-toggle/issues)
+
+## Install v0.2.0
+
+Tested runtime: **DSH 0.2.1-rc.5**. Declared compatibility: `>=0.2.1-rc.5 <0.2.2-0`, Node.js 24+.
+
+1. Open **Plugins → Add Plugin** in DSH.
+2. Paste the [v0.2.0 prebuilt package URL](https://github.com/ricardooooooa/dsh-plugin-batch-toggle/releases/download/v0.2.0/dsh-plugin-batch-toggle-0.2.0.tgz) below, or download it and enter its absolute file path.
+3. Install and enable the plugin. Restart if DSH requests it.
+
+```text
+https://github.com/ricardooooooa/dsh-plugin-batch-toggle/releases/download/v0.2.0/dsh-plugin-batch-toggle-0.2.0.tgz
+```
+
+No TypeScript or build tools are required. The [GitHub Release](https://github.com/ricardooooooa/dsh-plugin-batch-toggle/releases/tag/v0.2.0) is published. **As of 2026-10-30, the package is not published to npm and no community-catalog PR has been submitted.** Use the release asset above.
+
+Preparation targets the dshmarket community catalog. This tarball-only release will not enter the official Discover index, which requires npm metadata. References below to Discover describe the installed plugin's header action.
+
+Upgrade this plugin through DSH's add/update-plugin flow; it excludes itself from batch updates. For desktop-profile CLI installation, fully exit Desktop and use the CLI bundled with that same rc.5 installation.
 
 ## Use
 
-Open Plugins or dshmarket and select **一键更新**. Packages are processed serially. A definite per-package failure is recorded and, after safe cleanup, processing continues with the remaining packages. The same button becomes **停止更新** while running; stopping waits for the current item to settle or roll back.
+The current interface uses Chinese labels: **一键更新** means Update all, **停止更新** means Stop updates, and **批量更新** opens the detailed view.
 
-Packages that were already disabled remain disabled. Existing v0.1 recovery records are handled first using their saved enabled intent, so the single update action can resume unfinished work.
+Select **一键更新** in Plugins or dshmarket. Each eligible package follows this sequence: check versions → disable if needed → remove the old package → install the update → restore and verify the original enabled intent.
 
-The shared Plugins header covers Installed, Discover and dshmarket tabs. Standalone dshmarket settings/sidebar panels also get the action. The native **批量更新** tab and add-plugin menu provide fallback entry points.
+- The interface shows the current item, phase, progress, failure count and per-item results. A definite failure is recorded; processing continues after that item's safe cleanup.
+- The same button becomes **停止更新** while running. Stopping waits for the current item to settle or roll back instead of terminating its installation process.
+- The native **批量更新** tab shows detailed results and recovery status. The add-plugin menu is another entry point. The detailed tab uses its own action without a duplicate header button.
+- Legacy v0.1 recovery records are resumed first. Later runs also prioritize unfinished items from the previous update run.
 
-## Supported packages and update policy
+The shared header covers Installed, Discover and dshmarket tabs. Standalone dshmarket settings/sidebar panels also get the action.
 
-- Manageable third-party bundles installed from an npm registry under their own package name.
-- Self, marketplace carriers, official/core bundles, read-only and unmanageable packages are excluded.
-- Git, local file/link, tarball/URL and npm alias sources are skipped rather than replaced by a same-named registry package. Exclusions and reasons are available in the detailed view.
+## Scope and limitations
 
-Each item is checked, temporarily disabled if needed, removed, installed, and verified with its enabled intent restored. Updates use the official DSH plugin-management SDK and do not rely on marketplace auto-enablement.
+Automatic updates cover **manageable third-party bundles installed from an npm registry under their own package name**. Self, marketplace carriers, official/core bundles, read-only and unmanageable packages are excluded. Git, local file/link, tarball/URL and npm alias sources are skipped. The detailed view explains exclusions.
 
-The queried `latest` version is a reference. Installation respects the official registry configuration, compatibility checks, script approval and `minimumReleaseAge` policy; the newest release may not yet be eligible. Results distinguish the previous version, queried latest version, installed version and current enabled state.
+The queried `latest` is a reference version. Installation uses the official DSH plugin-management SDK and respects its registry configuration, compatibility checks, script approval and `minimumReleaseAge` policy. A new release may not yet be eligible. Results distinguish the previous, queried latest and actually installed versions.
 
-## Failure and recovery
+Failed installation or verification triggers a best-effort reinstall of the previous version and restoration of enabled intent. Results and unfinished items persist in `.dsh-plugin-batch-toggle/` within the active profile and survive a restart. **Rollback is not a complete undo:** third-party scripts, data changes and runtime effects may remain. Failed rollback remains an outstanding recovery item. Resolve unfinished work before uninstalling this plugin.
 
-Failed installation or verification triggers a best-effort reinstall of the previous version and restoration of enabled intent. Results and unresolved recovery responsibility persist independently of legacy recovery records. A later one-click update prioritizes the unfinished items from the previous run.
+Other known limits:
 
-Rollback can fail and cannot guarantee reversal of third-party install scripts, data changes or runtime effects. Unresolved items remain explicitly marked. Restart requirements are displayed; the plugin does not restart DSH automatically.
+- Restart requirements are displayed; the plugin does not restart DSH automatically.
+- DSH's enable API appends restored bundles, so the complete original interleaving and configuration precedence with preserved bundles cannot be guaranteed.
+- Previously disabled internal Cordis rows are not force-enabled.
+- Header integration depends on DOM markers. If host markup changes, use the native tab or menu.
 
-## Install or upgrade
+Endpoints use DSH owner authentication and same-origin checks. There is no extra listener or model-key requirement. This plugin does not upload conversations; package lookup and installation contact the configured npm registry.
 
-Runtime baseline: **DSH 0.2.1-rc.5**. Declared range: `>=0.2.1-rc.5 <0.2.2-0`, Node.js 24+.
+## Screenshots
 
-Download the published v0.2.0 prebuilt `.tgz` from [GitHub Releases](https://github.com/ricardooooooa/dsh-plugin-batch-toggle/releases) and enter its absolute path or published asset URL in Plugins → Add Plugin. The Release page determines which artifacts are available. End users do not need build tools.
+All screenshots use an **isolated rc.5 test profile**. The `dsh-update-fixture-*` packages in the results are controlled-registry fixtures, not evidence that every community plugin has been tested.
 
-Upgrade this plugin through DSH's package installation/update flow: the batch updater excludes itself. For desktop-profile CLI installation, fully exit Desktop and use the CLI bundled with that same rc.5 installation. Registry-name installation depends on actual npm publication.
+**Plugin management:** one shared header action for Installed, Discover and the marketplace.
 
-Header integration uses DOM markers; the native tab and menu remain the fallback if host markup changes. Public DSH enablement appends a bundle, so the complete original interleaving and precedence with preserved bundles cannot be guaranteed. Disabled internal Cordis rows are not force-enabled.
+![One-click update in rc.5 plugin management](./docs/screenshots/plugin-manager.png)
 
-Records stay in `.dsh-plugin-batch-toggle/` within the active profile. Endpoints use owner authentication and same-origin protection. There is no additional listener or model-key requirement. This plugin does not upload conversations; package lookup and installation contact the configured registry.
+**dshmarket:** the same action remains available alongside the marketplace's own update control.
 
-## Development and verification
+![One-click update in rc.5 dshmarket](./docs/screenshots/plugin-market.png)
 
-The development launcher discovers a matching rc.5 installation, with explicit paths available in `config/development.json`.
+**Detailed results:** fixture B fails and rolls back; later fixtures continue. The detailed tab has no duplicate header action.
+
+![Isolated-fixture update results and rollback details](./docs/screenshots/batch-recovery.png)
+
+## Development and validation
 
 ```powershell
 ./tooling/bootstrap.ps1
@@ -51,8 +79,6 @@ The development launcher discovers a matching rc.5 installation, with explicit p
 ./tooling/pnpm.ps1 run test:integration:updates
 ```
 
-The rc.5 controlled-registry integration verified successful A/C/D updates, failed B installation with rollback, continued processing, and D remaining disabled without executing. It uses an isolated profile and does not update the user's normal plugin collection. See [validation scope](docs/VALIDATION.md).
+Local validation on 2026-10-30 passed type checking, 108 automated tests, frontend/backend builds and a real rc.5 controlled-registry integration: A/C/D updated, B failed and rolled back, later items continued, and previously disabled D stayed disabled without executing. Tests use an isolated profile and do not run updates against the user's normal plugin collection. See [validation scope and boundaries](./docs/VALIDATION.md).
 
-Screenshots are stored under `docs/screenshots/` and declared in `screenshots.json`.
-
-See [release and community listing guidance](docs/RELEASE.md). MIT License.
+[Release notes](./docs/RELEASE.md) · [Marketplace submission preparation and PR draft](./docs/marketplace-submission.md) · [Current design](./docs/superpowers/specs/2026-10-30-rc5-one-click-update.md) · [MIT License](./LICENSE)

@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Windows / Node 24
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24.15.0
+          package-manager-cache: false
+      - name: Install pinned pnpm
+        run: npm install --global --ignore-scripts --no-audit --no-fund pnpm@11.28.5
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile --network-concurrency=4 --child-concurrency=1
+      - name: Typecheck, test and build
+        run: pnpm run check
+      - name: Validate release package contents
+        run: pnpm run release:pack
+      - name: Summarize package verification
+        run: |
+          $report = Get-Content artifacts/package-report.json -Raw | ConvertFrom-Json
+          @(
+            '### Prebuilt package'
+            ''
+            ('Package: ' + $report.filename)
+            ('Bytes: ' + $report.size)
+            ('SHA-256: ' + $report.sha256)
+            ''
+            'This run checks source, tests, build and package contents. Marketplace eligibility and actual DSH runtime integration are recorded separately in docs/VALIDATION.md.'
+          ) | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8
